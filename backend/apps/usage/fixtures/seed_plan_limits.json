@@ -1,0 +1,22 @@
+[
+  {
+    "model": "usage.planlimit",
+    "pk": "free",
+    "fields": {
+      "daily_questions": 20,
+      "monthly_tokens": 100000,
+      "max_documents": 10,
+      "max_file_mb": 10
+    }
+  },
+  {
+    "model": "usage.planlimit",
+    "pk": "pro",
+    "fields": {
+      "daily_questions": 200,
+      "monthly_tokens": 2000000,
+      "max_documents": 100,
+      "max_file_mb": 50
+    }
+  }
+]

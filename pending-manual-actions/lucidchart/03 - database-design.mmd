@@ -1,0 +1,25 @@
+erDiagram
+  USERS ||--o{ WORKSPACES : owns
+  USERS ||--o{ WORKSPACE_MEMBERS : joins
+  WORKSPACES ||--o{ WORKSPACE_MEMBERS : has
+  WORKSPACES ||--o{ DOCUMENTS : contains
+  USERS ||--o{ DOCUMENTS : uploads
+  DOCUMENTS ||--o{ DOCUMENT_CHUNKS : splits_into
+  WORKSPACES ||--o{ DOCUMENT_CHUNKS : isolates
+  USERS ||--o{ ASK_REQUESTS : asks
+  WORKSPACES ||--o{ ASK_REQUESTS : receives
+  ASK_REQUESTS ||--o{ REQUEST_SOURCES : cites
+  DOCUMENT_CHUNKS o|--o{ REQUEST_SOURCES : supports
+  ASK_REQUESTS ||--o| USAGE_RECORDS : charges
+  USERS ||--o{ USAGE_RECORDS : consumes
+  WORKSPACES ||--o{ USAGE_RECORDS : aggregates
+
+  USERS { bigint id PK string email UK string password string full_name boolean is_active datetime created_at }
+  WORKSPACES { bigint id PK bigint owner_id FK string name string plan datetime created_at }
+  WORKSPACE_MEMBERS { bigint id PK bigint workspace_id FK bigint user_id FK string role datetime created_at }
+  DOCUMENTS { bigint id PK bigint workspace_id FK bigint uploaded_by_id FK string content_hash string status int page_count }
+  DOCUMENT_CHUNKS { bigint id PK bigint document_id FK bigint workspace_id FK int chunk_index text content vector embedding }
+  ASK_REQUESTS { bigint id PK bigint workspace_id FK bigint user_id FK text question text answer string status string idempotency_key }
+  REQUEST_SOURCES { bigint id PK bigint request_id FK bigint chunk_id FK string document_name int page_number float similarity_score int rank }
+  PLAN_LIMITS { string plan PK int daily_questions int monthly_tokens int max_documents int max_file_mb }
+  USAGE_RECORDS { bigint id PK bigint user_id FK bigint workspace_id FK bigint request_id FK string kind int tokens_used decimal estimated_cost date period_day }

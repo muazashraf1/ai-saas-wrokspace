@@ -1,0 +1,1164 @@
+openapi: 3.0.3
+info:
+  title: AI SaaS Workspace API
+  version: 1.0.0
+  description: Tenant-isolated RAG Document Q&A SaaS Backend with Usage Limits & Citations
+paths:
+  /api/v1/auth/login/:
+    post:
+      operationId: v1_auth_login_create
+      description: |-
+        POST /api/v1/auth/login/
+        Public endpoint: authenticates email + password and returns access/refresh JWT tokens + user profile.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPair'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomTokenObtainPair'
+          description: ''
+  /api/v1/auth/me/:
+    get:
+      operationId: v1_auth_me_retrieve
+      description: |-
+        GET /api/v1/auth/me/  -> Retrieve current user profile
+        PATCH/PUT /api/v1/auth/me/ -> Update user's full_name
+        Requires Bearer JWT token authentication.
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    put:
+      operationId: v1_auth_me_update
+      description: |-
+        GET /api/v1/auth/me/  -> Retrieve current user profile
+        PATCH/PUT /api/v1/auth/me/ -> Update user's full_name
+        Requires Bearer JWT token authentication.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: v1_auth_me_partial_update
+      description: |-
+        GET /api/v1/auth/me/  -> Retrieve current user profile
+        PATCH/PUT /api/v1/auth/me/ -> Update user's full_name
+        Requires Bearer JWT token authentication.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/auth/refresh/:
+    post:
+      operationId: v1_auth_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/v1/auth/register/:
+    post:
+      operationId: v1_auth_register_create
+      description: |-
+        POST /api/v1/auth/register/
+        Public endpoint to create a new user account.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Register'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Register'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Register'
+          description: ''
+  /api/v1/workspaces/:
+    get:
+      operationId: v1_workspaces_list
+      description: |-
+        GET /api/v1/workspaces/
+        List all workspaces where the current user is a member.
+        Enforces strict tenant isolation: users never see workspaces they don't belong to.
+
+        POST /api/v1/workspaces/
+        Create a new workspace. The authenticated user automatically becomes the owner.
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Workspace'
+          description: ''
+    post:
+      operationId: v1_workspaces_create
+      description: |-
+        GET /api/v1/workspaces/
+        List all workspaces where the current user is a member.
+        Enforces strict tenant isolation: users never see workspaces they don't belong to.
+
+        POST /api/v1/workspaces/
+        Create a new workspace. The authenticated user automatically becomes the owner.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkspaceCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WorkspaceCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WorkspaceCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceCreate'
+          description: ''
+  /api/v1/workspaces/{ws}/:
+    get:
+      operationId: v1_workspaces_retrieve
+      description: |-
+        GET /api/v1/workspaces/{ws}/
+        Retrieve workspace details. Member only.
+
+        DELETE /api/v1/workspaces/{ws}/
+        Delete workspace and cascade chunks/documents. Owner only.
+      parameters:
+      - in: path
+        name: ws
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+          description: ''
+    delete:
+      operationId: v1_workspaces_destroy
+      description: |-
+        GET /api/v1/workspaces/{ws}/
+        Retrieve workspace details. Member only.
+
+        DELETE /api/v1/workspaces/{ws}/
+        Delete workspace and cascade chunks/documents. Owner only.
+      parameters:
+      - in: path
+        name: ws
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/workspaces/{ws}/ask/:
+    post:
+      operationId: v1_workspaces_ask_create
+      description: |-
+        POST /api/v1/workspaces/{ws}/ask/
+        Core RAG Q&A Endpoint.
+        Enforces 'Idempotency-Key' header and daily question limits (Section 8.2 & 7.8).
+      parameters:
+      - in: path
+        name: ws
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AskQuestionInput'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AskQuestionInput'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AskQuestionInput'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AskResponse'
+          description: ''
+  /api/v1/workspaces/{ws}/documents/:
+    get:
+      operationId: v1_workspaces_documents_list
+      description: |-
+        GET /api/v1/workspaces/{ws}/documents/
+        List all documents in the workspace with their ingestion status badges.
+
+        POST /api/v1/workspaces/{ws}/documents/
+        Upload a document (PDF or TXT).
+        Returns 202 Accepted with status 'uploaded' and triggers background ingestion.
+      parameters:
+      - in: path
+        name: ws
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Document'
+          description: ''
+    post:
+      operationId: v1_workspaces_documents_create
+      description: |-
+        GET /api/v1/workspaces/{ws}/documents/
+        List all documents in the workspace with their ingestion status badges.
+
+        POST /api/v1/workspaces/{ws}/documents/
+        Upload a document (PDF or TXT).
+        Returns 202 Accepted with status 'uploaded' and triggers background ingestion.
+      parameters:
+      - in: path
+        name: ws
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentUpload'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DocumentUpload'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DocumentUpload'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentUpload'
+          description: ''
+  /api/v1/workspaces/{ws}/documents/{id}/:
+    get:
+      operationId: v1_workspaces_documents_retrieve
+      description: |-
+        GET /api/v1/workspaces/{ws}/documents/{id}/
+        Retrieve document detail and chunk count. Member only.
+
+        DELETE /api/v1/workspaces/{ws}/documents/{id}/
+        Delete document, associated chunks, and stored physical file.
+        Only the uploader (file owner) or workspace admin/owner can delete (Section 6.4).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: ws
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+          description: ''
+    delete:
+      operationId: v1_workspaces_documents_destroy
+      description: |-
+        GET /api/v1/workspaces/{ws}/documents/{id}/
+        Retrieve document detail and chunk count. Member only.
+
+        DELETE /api/v1/workspaces/{ws}/documents/{id}/
+        Delete document, associated chunks, and stored physical file.
+        Only the uploader (file owner) or workspace admin/owner can delete (Section 6.4).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: ws
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/workspaces/{ws}/documents/{id}/retry/:
+    post:
+      operationId: v1_workspaces_documents_retry_create
+      description: |-
+        POST /api/v1/workspaces/{ws}/documents/{id}/retry/
+        Retry failed background processing for a document.
+        Only uploader or workspace admin/owner can trigger retry.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: ws
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Document'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Document'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Document'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+          description: ''
+  /api/v1/workspaces/{ws}/members/:
+    get:
+      operationId: v1_workspaces_members_list
+      description: |-
+        GET /api/v1/workspaces/{ws}/members/
+        List all members in the workspace. (Any workspace member can view).
+
+        POST /api/v1/workspaces/{ws}/members/
+        Invite/add a member to the workspace by email. (Owner or Admin only).
+      parameters:
+      - in: path
+        name: ws
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkspaceMember'
+          description: ''
+    post:
+      operationId: v1_workspaces_members_create
+      description: |-
+        GET /api/v1/workspaces/{ws}/members/
+        List all members in the workspace. (Any workspace member can view).
+
+        POST /api/v1/workspaces/{ws}/members/
+        Invite/add a member to the workspace by email. (Owner or Admin only).
+      parameters:
+      - in: path
+        name: ws
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddMember'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AddMember'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AddMember'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddMember'
+          description: ''
+  /api/v1/workspaces/{ws}/members/{id}/:
+    delete:
+      operationId: v1_workspaces_members_destroy
+      description: |-
+        DELETE /api/v1/workspaces/{ws}/members/{id}/
+        Remove a member from the workspace. (Owner or Admin only).
+        Owners cannot be removed.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: ws
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/workspaces/{ws}/requests/:
+    get:
+      operationId: v1_workspaces_requests_list
+      description: |-
+        GET /api/v1/workspaces/{ws}/requests/
+        List request history.
+        - Members: see their own requests.
+        - Admin/Owner: see all requests in the workspace (Section 8.1).
+      parameters:
+      - in: path
+        name: ws
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AskRequestList'
+          description: ''
+  /api/v1/workspaces/{ws}/requests/{id}/:
+    get:
+      operationId: v1_workspaces_requests_retrieve
+      description: |-
+        GET /api/v1/workspaces/{ws}/requests/{id}/
+        Retrieve request detail including citations and token metrics.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: ws
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AskRequestDetail'
+          description: ''
+  /api/v1/workspaces/{ws}/usage/:
+    get:
+      operationId: v1_workspaces_usage_retrieve
+      description: |-
+        GET /api/v1/workspaces/{ws}/usage/
+        Retrieve authenticated user's usage and plan limits in the specified workspace (Section 8.1 & 8.2).
+      parameters:
+      - in: path
+        name: ws
+        schema:
+          type: integer
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageSummary'
+          description: ''
+components:
+  schemas:
+    AddMember:
+      type: object
+      description: |-
+        Serializer to invite/add a member to a workspace by email.
+        As per Section 2.3: 'invite by email as a simple record, no real email needed'.
+      properties:
+        email:
+          type: string
+          format: email
+        role:
+          allOf:
+          - $ref: '#/components/schemas/AddMemberRoleEnum'
+          default: member
+      required:
+      - email
+    AddMemberRoleEnum:
+      enum:
+      - admin
+      - member
+      type: string
+      description: |-
+        * `admin` - Admin
+        * `member` - Member
+    AskQuestionInput:
+      type: object
+      description: Validates user question input.
+      properties:
+        question:
+          type: string
+          maxLength: 1000
+          minLength: 3
+      required:
+      - question
+    AskRequestDetail:
+      type: object
+      description: Full detail serializer for a single request including citations.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        workspace:
+          type: integer
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        question:
+          type: string
+        answer:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/Status70fEnum'
+        failure_code:
+          type: string
+          nullable: true
+          description: e.g. provider_timeout, provider_error, threshold_miss, rate_limit
+          maxLength: 40
+        provider:
+          type: string
+          maxLength: 30
+        model:
+          type: string
+          maxLength: 60
+        prompt_tokens:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        completion_tokens:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        total_tokens:
+          type: string
+          readOnly: true
+        latency_ms:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        idempotency_key:
+          type: string
+          description: Client-supplied UUID to prevent duplicate executions on network
+            retry
+          maxLength: 64
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequestSource'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - idempotency_key
+      - question
+      - sources
+      - total_tokens
+      - user
+      - workspace
+    AskRequestList:
+      type: object
+      description: Serializer for request history listings.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        question:
+          type: string
+        answer:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/Status70fEnum'
+        provider:
+          type: string
+          maxLength: 30
+        latency_ms:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        sources_count:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - question
+      - sources_count
+      - user
+    AskResponse:
+      type: object
+      description: Formats the Ask endpoint success response (Section 8.2).
+      properties:
+        request_id:
+          type: integer
+        status:
+          type: string
+        answer:
+          type: string
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequestSource'
+        usage:
+          type: object
+          additionalProperties: {}
+      required:
+      - answer
+      - request_id
+      - sources
+      - status
+    CustomTokenObtainPair:
+      type: object
+      description: |-
+        Custom JWT serializer that includes user profile details
+        along with access and refresh tokens.
+      properties:
+        email:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - email
+      - password
+    Document:
+      type: object
+      description: Serializer for displaying document details and processing status.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        workspace:
+          type: integer
+          readOnly: true
+        uploaded_by:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        original_name:
+          type: string
+          readOnly: true
+        mime_type:
+          type: string
+          readOnly: true
+        size_bytes:
+          type: integer
+          readOnly: true
+        content_hash:
+          type: string
+          readOnly: true
+          description: SHA-256 hash of file content to prevent duplicate uploads in
+            the same workspace
+        status:
+          allOf:
+          - $ref: '#/components/schemas/DocumentStatusEnum'
+          readOnly: true
+        failure_reason:
+          type: string
+          readOnly: true
+          nullable: true
+        page_count:
+          type: integer
+          readOnly: true
+        chunks_count:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - chunks_count
+      - content_hash
+      - created_at
+      - failure_reason
+      - id
+      - mime_type
+      - original_name
+      - page_count
+      - size_bytes
+      - status
+      - updated_at
+      - uploaded_by
+      - workspace
+    DocumentStatusEnum:
+      enum:
+      - uploaded
+      - processing
+      - ready
+      - failed
+      type: string
+      description: |-
+        * `uploaded` - Uploaded
+        * `processing` - Processing
+        * `ready` - Ready
+        * `failed` - Failed
+    DocumentUpload:
+      type: object
+      description: |-
+        Serializer for handling multipart document upload.
+        Validates file size, type, magic bytes, duplicate hash, and workspace document limits.
+      properties:
+        file:
+          type: string
+          format: uri
+          writeOnly: true
+      required:
+      - file
+    PatchedUser:
+      type: object
+      description: Serializer for public user profile representation.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+        full_name:
+          type: string
+          maxLength: 120
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PlanEnum:
+      enum:
+      - free
+      - pro
+      type: string
+      description: |-
+        * `free` - Free
+        * `pro` - Pro
+    Register:
+      type: object
+      description: Serializer for user registration with robust validation.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        full_name:
+          type: string
+          maxLength: 120
+        password:
+          type: string
+          writeOnly: true
+        password_confirm:
+          type: string
+          writeOnly: true
+      required:
+      - email
+      - full_name
+      - id
+      - password
+      - password_confirm
+    RequestSource:
+      type: object
+      description: Serializer for individual citation sources.
+      properties:
+        n:
+          type: integer
+          readOnly: true
+        document:
+          type: string
+          readOnly: true
+        page:
+          type: integer
+          readOnly: true
+        score:
+          type: number
+          format: double
+          readOnly: true
+        snippet:
+          type: string
+          readOnly: true
+      required:
+      - document
+      - n
+      - page
+      - score
+      - snippet
+    Status70fEnum:
+      enum:
+      - pending
+      - answered
+      - unsupported
+      - failed
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `answered` - Answered
+        * `unsupported` - Unsupported
+        * `failed` - Failed
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    UsageSummary:
+      type: object
+      description: Serializer displaying active user's quota, limits, and reset time
+        (Section 8.1 & 8.2).
+      properties:
+        plan:
+          type: string
+        daily_questions_used:
+          type: integer
+        daily_questions_limit:
+          type: integer
+        daily_questions_remaining:
+          type: integer
+        monthly_tokens_used:
+          type: integer
+        monthly_tokens_limit:
+          type: integer
+        max_documents_limit:
+          type: integer
+        max_file_mb_limit:
+          type: integer
+        resets_at:
+          type: string
+      required:
+      - daily_questions_limit
+      - daily_questions_remaining
+      - daily_questions_used
+      - max_documents_limit
+      - max_file_mb_limit
+      - monthly_tokens_limit
+      - monthly_tokens_used
+      - plan
+      - resets_at
+    User:
+      type: object
+      description: Serializer for public user profile representation.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+        full_name:
+          type: string
+          maxLength: 120
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - email
+      - id
+    Workspace:
+      type: object
+      description: Serializer for displaying workspaces.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 120
+        owner:
+          allOf:
+          - $ref: '#/components/schemas/WorkspaceMemberUser'
+          readOnly: true
+        plan:
+          $ref: '#/components/schemas/PlanEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        current_user_role:
+          type: string
+          readOnly: true
+        member_count:
+          type: string
+          readOnly: true
+      required:
+      - created_at
+      - current_user_role
+      - id
+      - member_count
+      - name
+      - owner
+    WorkspaceCreate:
+      type: object
+      description: |-
+        Serializer to create a workspace.
+        Atomically creates the Workspace and assigns the creator as 'owner' in workspace_members.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 120
+        plan:
+          $ref: '#/components/schemas/PlanEnum'
+      required:
+      - id
+      - name
+    WorkspaceMember:
+      type: object
+      description: Serializer representing a workspace member with nested user info.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        workspace:
+          type: integer
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/WorkspaceMemberUser'
+          readOnly: true
+        role:
+          $ref: '#/components/schemas/WorkspaceMemberRoleEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - user
+      - workspace
+    WorkspaceMemberRoleEnum:
+      enum:
+      - owner
+      - admin
+      - member
+      type: string
+      description: |-
+        * `owner` - Owner
+        * `admin` - Admin
+        * `member` - Member
+    WorkspaceMemberUser:
+      type: object
+      description: Minimal user representation for membership listings.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        full_name:
+          type: string
+          maxLength: 120
+      required:
+      - email
+      - id
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

@@ -1,0 +1,23 @@
+sequenceDiagram
+  actor U as Browser
+  participant F as Next.js UI
+  participant A as Django API
+  participant DB as PostgreSQL/pgvector
+  participant Q as Redis/Celery
+  participant AI as Mock or Gemini
+  U->>F: Ask question
+  F->>A: POST /workspaces/{ws}/ask + JWT + Idempotency-Key
+  A->>DB: Verify membership, quotas, prior key
+  A->>AI: Embed question
+  A->>DB: Top-K vector search (workspace scoped)
+  alt best score below threshold
+    A->>DB: Save unsupported request
+    A-->>F: 200 unsupported, empty sources
+  else evidence supported
+    A->>AI: Generate grounded answer from passive context
+    A->>DB: Save request, citations and usage atomically
+    A-->>F: 200 answer + sources + usage
+  end
+  F-->>U: Render answer with numbered citations
+
+  Note over U,AI: Upload flow: multipart POST -> hash/type/limit validation -> 202 -> Celery extracts, chunks (400/50), embeds and marks ready/failed.

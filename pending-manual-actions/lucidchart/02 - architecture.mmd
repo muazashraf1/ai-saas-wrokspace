@@ -1,0 +1,30 @@
+flowchart LR
+  subgraph Public[Public network]
+    U[Browser / User]
+  end
+  subgraph App[Application boundary]
+    N[Next.js 16 UI\nReact 19]
+    D[Django REST API\nJWT + RBAC + quotas]
+    W[Celery worker]
+    R[(Redis broker/cache)]
+  end
+  subgraph Data[Private data boundary]
+    P[(PostgreSQL + pgvector)]
+    O[(Object / local storage)]
+  end
+  subgraph AI[AI provider boundary]
+    M[Deterministic MockAIProvider]
+    G[Gemini API]
+  end
+  U -->|HTTPS| N
+  N -->|REST + Bearer JWT| D
+  D -->|ORM + vector search| P
+  D -->|upload/read| O
+  D -->|enqueue| R
+  R --> W
+  W --> P
+  W --> O
+  D -->|embed / generate| M
+  D -->|production adapter| G
+  W -->|document embeddings| M
+  W -->|document embeddings| G

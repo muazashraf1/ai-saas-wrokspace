@@ -1,0 +1,29 @@
+# Python & Virtualenv
+venv/
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+
+# Environment variables
+.env
+
+# Database & Local Storage
+*.sqlite3
+storage/uploads/
+media/
+staticfiles/
+
+# Logs & Celery
+*.log
+celerybeat-schedule
+celerybeat.pid
+
+# Testing & Coverage
+.pytest_cache/
+htmlcov/
+.coverage
+
+# IDE
+.idea/
+.vscode/
