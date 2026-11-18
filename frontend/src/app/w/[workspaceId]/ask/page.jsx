@@ -397,7 +397,7 @@ function AskContent() {
                         <div>
                           <strong>{msg.answer}</strong>
                           <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                            The cosine similarity score fell below the workspace relevance threshold (0.70). The AI provider was not called to prevent hallucinations and save cost.
+                            The cosine similarity score fell below the configured workspace relevance threshold. The AI provider was not called to prevent hallucinations and save cost.
                           </div>
                         </div>
                       </div>

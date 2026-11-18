@@ -38,6 +38,20 @@ def test_mock_provider_related_text_scores_above_mock_threshold():
     assert unrelated_score < 0.30
 
 
+def test_mock_provider_short_question_matches_a_long_assignment_chunk():
+    """Demo RAG must support a real short question against a long PDF passage."""
+    provider = MockAIProvider(dimensions=1536)
+    question = provider.embed_text("What are the mandatory deliverables for each project?")
+    assignment_chunk = provider.embed_text(
+        "Mandatory work for every project includes requirements and user flows, "
+        "architecture, database design, API workflows, implementation, developer-side QA, "
+        "security and reliability, deployment and costs, scaling, project-specific depth, "
+        "source and AI disclosure, and submission and interview details."
+    )
+    score = sum(a * b for a, b in zip(question, assignment_chunk))
+    assert score >= 0.08
+
+
 def test_prompt_injection_defense():
     """Security: Malicious prompt injection in context must be bounded as passive data."""
     malicious_context = [

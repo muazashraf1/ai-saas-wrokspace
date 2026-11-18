@@ -1,4 +1,13 @@
 /* AI SaaS Workspace - Professional Enterprise Design System */
+nextjs-portal,
+#nextjs-dev-overlay,
+[data-nextjs-dialog-overlay],
+[data-nextjs-toast] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
 :root {
   /* Color Palette - Simple, Professional Dark Theme */
   --bg-primary: #0b0f17;

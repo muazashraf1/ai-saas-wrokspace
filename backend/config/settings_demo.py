@@ -29,7 +29,12 @@ MIGRATION_MODULES = {
 
 AI_PROVIDER = 'mock'
 AI_API_KEY = ''
-MOCK_SIMILARITY_THRESHOLD = 0.30
+# The offline lexical mock scores a short question against an entire document
+# chunk.  A 0.30 semantic-embedding threshold is too strict for that purpose:
+# valid, specific questions about a 300-500-token PDF chunk can score around
+# 0.13.  0.08 still rejects unrelated questions (which have no shared terms)
+# while making the no-cost walkthrough reliable.
+MOCK_SIMILARITY_THRESHOLD = 0.08
 TOP_K_CHUNKS = 4
 
 CELERY_TASK_ALWAYS_EAGER = True
